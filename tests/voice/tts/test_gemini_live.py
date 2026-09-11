@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 
 from glc.voice.tts.base import SynthesizeResult, TTSError
-from glc.voice.tts.providers.gemini_live.adapter import Provider
+from glc.voice.tts.providers.gemini_live.adapter_ import Provider
 from tests.voice.tts.mocks.gemini_live_mock import GeminiLiveMock
 
 
@@ -20,14 +20,14 @@ def mock():
 
 @pytest.mark.asyncio
 async def test_provider_name_matches(mock):
-    adapter = Provider(config={"mock": mock})
-    assert adapter.name == "gemini_live"
+    adapter_ = Provider(config={"mock": mock})
+    assert adapter_.name == "gemini_live"
 
 
 @pytest.mark.asyncio
 async def test_synthesize_returns_synthesize_result(mock):
-    adapter = Provider(config={"mock": mock})
-    r = await adapter.synthesize("hello", voice_id="default")
+    adapter_ = Provider(config={"mock": mock})
+    r = await adapter_.synthesize("hello", voice_id="default")
     assert isinstance(r, SynthesizeResult)
     assert r.provider == "gemini_live"
     assert r.audio_b64
@@ -36,8 +36,8 @@ async def test_synthesize_returns_synthesize_result(mock):
 
 @pytest.mark.asyncio
 async def test_synthesize_passes_text_to_upstream(mock):
-    adapter = Provider(config={"mock": mock})
-    await adapter.synthesize("hello world", voice_id="x")
+    adapter_ = Provider(config={"mock": mock})
+    await adapter_.synthesize("hello world", voice_id="x")
     assert mock.received_calls
     assert mock.received_calls[-1]["text_len"] == len("hello world")
 
@@ -45,24 +45,24 @@ async def test_synthesize_passes_text_to_upstream(mock):
 @pytest.mark.asyncio
 async def test_synthesize_records_sample_rate(mock):
     mock.canned_sample_rate = 22050
-    adapter = Provider(config={"mock": mock})
-    r = await adapter.synthesize("hi")
+    adapter_ = Provider(config={"mock": mock})
+    r = await adapter_.synthesize("hi")
     assert r.sample_rate == 22050
 
 
 @pytest.mark.asyncio
 async def test_synthesize_propagates_upstream_error(mock):
     mock.upstream_failure = (502, "upstream broken")
-    adapter = Provider(config={"mock": mock})
+    adapter_ = Provider(config={"mock": mock})
     with pytest.raises(TTSError) as ei:
-        await adapter.synthesize("hi")
+        await adapter_.synthesize("hi")
     assert ei.value.status == 502
 
 
 @pytest.mark.asyncio
 async def test_synthesize_handles_empty_text(mock):
-    adapter = Provider(config={"mock": mock})
-    r = await adapter.synthesize("", voice_id=None)
+    adapter_ = Provider(config={"mock": mock})
+    r = await adapter_.synthesize("", voice_id=None)
     assert isinstance(r, SynthesizeResult)
 
 
@@ -70,11 +70,11 @@ async def test_synthesize_handles_empty_text(mock):
 async def test_channel_specific_behaviour_response_modalities_audio(mock):
     """The BidiGenerateContentSetup frame's `responseModalities` field
     controls whether the server emits audio or text. Defaulting to
-    text means the adapter silently produces no audio for every
-    synthesis call. The adapter must explicitly set
+    text means the adapter_ silently produces no audio for every
+    synthesis call. The adapter_ must explicitly set
     `responseModalities: ["AUDIO"]`."""
-    adapter = Provider(config={"mock": mock})
-    await adapter.synthesize("hello", voice_id=None)
+    adapter_ = Provider(config={"mock": mock})
+    await adapter_.synthesize("hello", voice_id=None)
     assert mock.setup_response_modalities == ["AUDIO"], (
         f"setup frame must declare responseModalities=['AUDIO']; got {mock.setup_response_modalities!r}"
     )
